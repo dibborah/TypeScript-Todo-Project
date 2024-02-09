@@ -11,6 +11,9 @@ const list = document.querySelector<HTMLUListElement>("#list");
 const form = document.getElementById("new-task-form") as HTMLElement | null;
 const input = document.querySelector<HTMLInputElement>("#new-task-title");
 
+const tasks: Task[] = loadTask();
+tasks.forEach(addListItem);
+
 form?.addEventListener("submit", (e) => {
   e.preventDefault();
     if(input?.value == "" || input?.value == null) return;
@@ -21,7 +24,9 @@ form?.addEventListener("submit", (e) => {
         completed: false,
         createdAt : new Date()
     }
+    tasks.push(newTask);
     addListItem(newTask);
+    saveTask();
     input.value = "";
 });
 
@@ -29,10 +34,25 @@ function addListItem(task: Task){
   const item = document.createElement("li");
   const label = document.createElement("label");
   const checkbox = document.createElement("input");
+  console.log(task);
+  checkbox.addEventListener("change", () => {
+    task.completed = checkbox.checked;
+    console.log(task);
+    saveTask();
+  })
   checkbox.type = "checkbox";
-  checkbox.checked = true;
+  checkbox.checked = task.completed;
   label.append(checkbox, task.title);
   item.append(label);
   list?.append(item);
 }
 
+function saveTask(){
+  localStorage.setItem("TASKS", JSON.stringify(tasks));
+}
+
+function loadTask(): Task[]{
+  const taskJSON = localStorage.getItem("TASKS");
+  if(taskJSON === null) return [];
+  return JSON.parse(taskJSON);
+}
